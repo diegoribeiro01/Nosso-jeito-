@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Loja Nosso Jeito</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #fff8f0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+    #game {
+      max-width: 600px;
+      padding: 30px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    button {
+      margin: 10px;
+      padding: 15px 25px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background-color: #ffb6b9;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+    }
+    button:hover {
+      background-color: #ff8e92;
+    }
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 2px solid #ffb6b9;
+      margin-top: 15px;
+      width: 80%;
+      box-sizing: border-box;
+    }
+    #error {
+      color: #d9534f;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <h1>Bem-vinda à Loja "Nosso Jeito"</h1>
+    <p id="text">Você está prestes a embarcar numa jornada cheia de aconchego, cheirinho de lar e diversão. Preparada?</p>
+    <div id="options"></div>
+  </div>
+
+  <script>
+    const textEl = document.getElementById('text');
+    const optionsEl = document.getElementById('options');
+
+    let stage = 0;
+    let selectedFilling = [];
+
+    const stages = [
+      {
+        text: "Você entra na loja e sente aquele cheiro gostoso que remete a lar. Na sua frente, travesseiros, copas e lençóis te convidam a ficar.",
+        options: ["Deitar nos travesseiros", "Pegar uma copa", "Acariciar os lençóis"]
+      },
+      {
+        text: "A atmosfera é tão acolhedora que você perde a noção do tempo. Tudo ali é fofinho, seguro e cheio do nosso jeitinho.",
+        options: ["Fechar os olhos e sentir", "Sentar e respirar fundo", "Ficar ali só mais um pouquinho"]
+      },
+      {
+        text: "Lá no fundo da loja, você encontra muitos bichinhos de pelúcia olhando pra você com carinha de 'me leva'.",
+        options: ["Escolher um canguru dengoso", "Pegar um elefante tímido", "Chamar uma girafa manhosa"]
+      },
+      {
+        text: "Encha com o que acredita ser melhor pra ele, pra deixar ele mais bonito e resistente!",
+        options: [
+          {text: "Carinho", good: true},
+          {text: "Confiança", good: true},
+          {text: "Alegria", good: true},
+          {text: "Ciúmes", good: false},
+          {text: "Desconfiança", good: false},
+          {text: "Orgulho", good: false},
+        ],
+        maxSelect: 3
+      },
+      {
+        text: "Hora de enfeitar! Escolha a que mais combina com ele.",
+        options: ["Cheiro de lar", "Aconchego", "Segurança", "Alegria"]
+      },
+      {
+        text: "Nosso bichinho está pronto! Ele carrega o cheiro de lar, o aconchego e a segurança que é estar contigo.",
+        options: ["Dar um nome pra ele"]
+      },
+      {
+        text: "Você olha pro bichinho e sente que ele é mais do que pelúcia... tem história, tem carinho, tem a gente.",
+        options: ["Apertar forte e sorrir"]
+      },
+      {
+        text: "Priscila, obrigada por construir essa loja do nosso jeito. Pronta pra descobrir uma surpresa bem do seu jeitinho?",
+        options: ["Ver Surpresa"]
+      },
+      {
+        text: "Te amo. Essa loja é só o início de tudo que ainda vamos construir juntos.",
+        options: []
+      }
+    ];
+
+    function clearOptions() {
+      optionsEl.innerHTML = '';
+      const err = document.getElementById('error');
+      if (err) err.remove();
+    }
+
+    function renderStage() {
+      clearOptions();
+      textEl.innerText = stages[stage].text;
+
+      if(stage === 3){
+        selectedFilling = [];
+        stages[stage].options.forEach((option, i) => {
+          const btn = document.createElement('button');
+          btn.innerText = option.text;
+          btn.dataset.good = option.good;
+          btn.onclick = () => {
+            const index = selectedFilling.indexOf(i);
+            if(index > -1){
+              selectedFilling.splice(index,1);
+              btn.style.backgroundColor = '#ffb6b9';
+            } else {
+              if(selectedFilling.length < stages[stage].maxSelect){
+                selectedFilling.push(i);
+                btn.style.backgroundColor = '#ff8e92';
+              } else {
+                showError(`Você só pode escolher até ${stages[stage].maxSelect} opções.`);
+              }
+            }
+          }
+          optionsEl.appendChild(btn);
+        });
+
+        const nextBtn = document.createElement('button');
+        nextBtn.innerText = "Próximo";
+        nextBtn.onclick = () => {
+          if(selectedFilling.length === 0){
+            showError("Escolha pelo menos uma opção para continuar.");
+          } else {
+            stage++;
+            renderStage();
+          }
+        }
+        optionsEl.appendChild(nextBtn);
+
+        return;
+      }
+
+      if(stage === 5){
+        const nameBtn = document.createElement('button');
+        nameBtn.innerText = stages[stage].options[0];
+        nameBtn.onclick = () => {
+          clearOptions();
+          textEl.innerText = "Digite um nome para o seu bichinho:";
+          const input = document.createElement('input');
+          input.type = "text";
+          input.id = "nameInput";
+          input.placeholder = "Nome do bichinho";
+          optionsEl.appendChild(input);
+
+          const confirmBtn = document.createElement('button');
+          confirmBtn.innerText = "Confirmar nome";
+          confirmBtn.onclick = () => {
+            const nome = input.value.trim();
+            if(nome.length === 0){
+              showError("Por favor, digite um nome válido.");
+            } else {
+              clearOptions();
+              textEl.innerText = `Parabéns, seu bichinho ${nome} está pronto!`;
+              const contBtn = document.createElement('button');
+              contBtn.innerText = "Continuar";
+              contBtn.onclick = () => {
+                stage++;
+                renderStage();
+              }
+              optionsEl.appendChild(contBtn);
+            }
+          }
+          optionsEl.appendChild(confirmBtn);
+        }
+        optionsEl.appendChild(nameBtn);
+        return;
+      }
+
+      if(stage === 7){
+        stages[stage].options.forEach(option => {
+          const btn = document.createElement('button');
+          btn.innerText = option;
+          btn.onclick = () => {
+            window.location.href = "https://open.spotify.com/track/3KK3nLgrRdycpnYxPDVfMV?si=NkWMoHBgQAq2EkcdcnfgOg";
+          }
+          optionsEl.appendChild(btn);
+        });
+        return;
+      }
+
+      stages[stage].options.forEach(option => {
+        const btn = document.createElement('button');
+        btn.innerText = option;
+        btn.onclick = () => {
+          stage++;
+          renderStage();
+        }
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function showError(msg){
+      let err = document.getElementById('error');
+      if(!err){
+        err = document.createElement('div');
+        err.id = 'error';
+        optionsEl.appendChild(err);
+      }
+      err.innerText = msg;
+    }
+
+    renderStage();
+  </script>
+</body>
+  </html>
+  
